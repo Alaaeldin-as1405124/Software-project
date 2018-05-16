@@ -1,0 +1,29 @@
+<form class="form-control">
+    <fieldset class="">
+        <legend>Transfer ownership</legend>
+
+
+        <div class="form-row">
+
+            <div class="form-group col-md-12">
+                <label>VIN</label>
+                <input type="text" class="form-control" name="vin" placeholder="vehicle number" required>
+            </div>
+
+            <div class="form-group col-md-12">
+                <label>Owner QID</label>
+                <input type="text" class="form-control" name="pQID" placeholder="owner QID" required>
+            </div>
+            <div class="form-group col-md-12">
+                <label>New Owner QID</label>
+                <input type="text" class="form-control" name="nQID" placeholder="new owner QID" required>
+            </div>
+
+
+        </div>
+
+
+        <button type="submit" onclick="onTransferOwner(this.form)" class="btn btn-primary">submit</button>
+    </fieldset>
+</form>
+               
