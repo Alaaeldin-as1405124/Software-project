@@ -50,20 +50,24 @@ class RegisterRepository {
 
     }
 
-    async transferOwnership(vin, pQID, nQID) {
+    async transferOwnership(transferObject) {
         let owners = await this.getOwners();
-        let prevOwner = owners.find(o => o.qId == pQID);
-        let newOwner = owners.find(o => o.qId == nQID);
-        let vehicle = await this.getVehicle(vin);
+        let prevOwner = owners.find(o => o.qId == transferObject.pQID);
+        let newOwner = owners.find(o => o.qId == transferObject.nQID);
+        let vehicle = await this.getVehicle(transferObject.vin);
         //errors handling
         if (!vehicle)
             throw "Vehicle doesn't exist";
         if (!prevOwner)
             throw "current owner doesn't exist";
+        if (transferObject.name != prevOwner.name)
+            throw "Owner name mismatch";
+        if (transferObject.pQID != prevOwner.qId)
+            throw "Owner QID mismatch";
         if (!newOwner)
             throw "new owner doesn't exist";
         //check if the owner is owning that vehicle or not
-        let vehicleIndex = prevOwner.vehicles.findIndex(singleVehicle => singleVehicle == vin);
+        let vehicleIndex = prevOwner.vehicles.findIndex(singleVehicle => singleVehicle == transferObject.vin);
         if (vehicleIndex == -1)
             throw "Current owner doesn't owning that vehicle";
         if (prevOwner.qId == newOwner.qId)
@@ -71,7 +75,7 @@ class RegisterRepository {
         //delete the vehicle from the old owner
         prevOwner.vehicles.splice(vehicleIndex, 1);
         //assin it to the new owner
-        newOwner.vehicles.push(vin);
+        newOwner.vehicles.push(transferObject.vin);
         //save
         await this.saveOwners(owners);
         //return that its done
@@ -106,40 +110,38 @@ class RegisterRepository {
     }
 
 
+    async renewRegisteration(vin) {
+        //get the current year
+        let currentYear = (new Date()).getFullYear();
 
-async renewRegisteration(vin)
-{
-    //get the current year
-    let currentYear = (new Date()).getFullYear();
+        let vehicles = await
+            this.getVehicles();
+        let vehicle = await
+            vehicles.find(v => v.vin == vin);
 
-    let vehicles = await
-    this.getVehicles();
-    let vehicle = await
-    vehicles.find(v => v.vin == vin);
-
-    //if vin exists
-    if (vehicle) {
-        //check if its already renewed
-        if (vehicle.insurancePolicy.year == currentYear)
-            return "Vehicle is already renewed"
-        //if the vehicle is older than 2 years
-        if ((currentYear - vehicle.productionYear) > 2) {
-            //if certs are not valid
-            let currentYearFitnessCert = vehicle.fitnessCert.find(singleCert => singleCert.year == currentYear);
-            if (!currentYearFitnessCert)
-                throw "Fitness cert has not been found";
-            if (!currentYearFitnessCert.approved)
-                throw "FitnessCert doesn't approved";
+        //if vin exists
+        if (vehicle) {
+            //check if its already renewed
+            if (vehicle.insurancePolicy.year == currentYear)
+                return "Vehicle is already renewed"
+            //if the vehicle is older than 2 years
+            if ((currentYear - vehicle.productionYear) > 2) {
+                //if certs are not valid
+                let currentYearFitnessCert = vehicle.fitnessCert.find(singleCert => singleCert.year == currentYear);
+                if (!currentYearFitnessCert)
+                    throw "Fitness cert has not been found";
+                if (!currentYearFitnessCert.approved)
+                    throw "FitnessCert doesn't approved";
+            }
+            vehicle.insurancePolicy.year = currentYear;
+            await
+                this.saveVehicles(vehicles)
+            return "renewed registration successfully";
         }
-        vehicle.insurancePolicy.year = currentYear;
-        await
-        this.saveVehicles(vehicles)
-        return "renewed registration successfully";
-    }
-    else
-        throw "Vehicle doesn't exist Invalid VIN"
+        else
+            throw "Vehicle doesn't exist Invalid VIN"
 
-}
+    }
 
 }
 

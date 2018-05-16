@@ -31,13 +31,14 @@ async function onTransferOwner(data) {
     event.preventDefault();
     //get all form data
     let form = convertForm2JSON(data);
-    if (!form.vin || !form.pQID || !form.nQID){
+    if (!form.vin || !form.pQID || !form.nQID || !form.name){
         alert("Please fill all fields");
         return;
     }
-    let fetchResponse = await fetch(`/api/vehicle/transfer/${form.vin}/${form.pQID}/${form.nQID}`, {
+    let fetchResponse = await fetch(`/api/vehicle/transfer/`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'}
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(form)
     });
     let response = await fetchResponse.text();
     alert(response)

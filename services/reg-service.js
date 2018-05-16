@@ -32,12 +32,10 @@ class RegService {
     }
 
     async transferOwnership(req, res) {
-        const vin = req.params.vin;
-        const pQID = req.params.pQID;
-        const nQID = req.params.nQID;
-        console.log(vin);
+        const transferObject = req.body;
+        //console.log(vin);
         try {
-            let response = await regRepo.transferOwnership(vin, pQID, nQID);
+            let response = await regRepo.transferOwnership(transferObject);
             res.status(201).send(response);
         }
         catch (err) {
