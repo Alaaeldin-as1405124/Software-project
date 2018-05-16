@@ -89,5 +89,81 @@ describe('Register Repository Test Suite', () => {
 
     });
 
+ describe('Use cases test suite', async () => {
+     
+        //Transfer ownership
+        it('Transfer ownership use case ', async () => {
+
+            //save the original data to retrive it back, so no effect on the original data
+            let originaOwnerData = await registerRepo.getOwners();
+
+            let vehiclePrevOwner = await registerRepo.getOwner("123");
+            let vehicleNewOwner = await registerRepo.getOwner("124");
+            let transferObject = {
+                vin:vehiclePrevOwner.vehicles[0],
+                pQID:vehiclePrevOwner.qId,
+                nQID:vehicleNewOwner.qId,
+                name:vehiclePrevOwner.name
+            };
+
+            //check the length of vehicles array before transfering to the new owner
+            let vehiclesLengthBeforeTransfer = vehicleNewOwner.vehicles.length;
+
+            //do the transfer
+            await registerRepo.transferOwnership(transferObject);
+            //check if its done
+            let newVehicleOwner = await registerRepo.getOwner(vehicleNewOwner.qId);
+
+            expect(newVehicleOwner).to.be.a('object')
+            expect(newVehicleOwner.vehicles)
+                .to.be.a('array').and
+                .have.a.have.property('length', vehiclesLengthBeforeTransfer+1);
+
+            //retrive the data back
+            await registerRepo.saveOwners(originaOwnerData);
+
+        });
+
+
+
+        //Transfer ownership
+        it('Manage Accident use case ', async () => {
+
+            const testingVIN="v111";
+            //save the original data to retrive it back, so no effect on the original data
+            let originalVehiclesData = await registerRepo.getVehicles();
+            let vehicle = await registerRepo.getVehicle(testingVIN);
+            let accident = {
+                vin:testingVIN,
+                victimVin:"v112",
+                date:"01-01-2018",
+                time:"10:00",
+                desc:"He stopped suddenly before entering the roundabout",
+                loc:"Al sadd street"
+            };
+
+            //check the length of vehicles array before transfering to the new owner
+            let accidentCount = vehicle.accidents.length;
+
+            //report an accident
+            await registerRepo.reportAccident(accident);
+            //check if its done
+            let vehicleAfterReporting = await registerRepo.getVehicle(testingVIN);
+            //verify that its object
+            expect(vehicleAfterReporting).to.be.a('object')
+            expect(vehicleAfterReporting.accidents)
+                .to.be.a('array').and
+                .have.a.have.property('length', accidentCount+1);
+
+            //retrive the data back
+            await registerRepo.saveVehicles(originalVehiclesData);
+
+        });
+
+
+});
+
+
+
 
 });

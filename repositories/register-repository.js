@@ -92,6 +92,7 @@ class RegisterRepository {
         //send the accident report to the insurance company
         //wait for insurance approval
         //store the acknolgement report
+        //assuming the user confirmed that its his fault
         if (!victimVehicle)
             throw "Victim vehicle doesn't exist";
         if (!vehicle)
@@ -143,6 +144,21 @@ class RegisterRepository {
 
     }
 
+    async vehicleOwnerValidation(vin,qId){
+        let owner = await this.getOwner(qId);
+        //if owner is exist
+        if (owner){
+            let vehicle = await this.getVehicle(vin);
+            //if vehicle exist
+            if (vehicle)
+                return true;
+            else
+                return false;
+
+        }
+        else
+            return false;
+    }
 }
 
 module.exports = new RegisterRepository();
